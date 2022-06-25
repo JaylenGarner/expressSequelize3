@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import model(s)
-const { Classroom } = require('../db/models');
+const { Classroom, Supply, sequelize } = require('../db/models');
 const { Op } = require('sequelize');
 
 // List of classrooms
@@ -32,7 +32,7 @@ router.get('/', async (req, res, next) => {
                     the studentLimit query parameter to equal the number
                 But if the studentLimit query parameter is NOT an integer, add
                     an error message of 'Student Limit should be a integer' to
-                    errorResult.errors 
+                    errorResult.errors
     */
     const where = {};
 
@@ -53,7 +53,13 @@ router.get('/', async (req, res, next) => {
 // Single classroom
 router.get('/:id', async (req, res, next) => {
     let classroom = await Classroom.findByPk(req.params.id, {
-        attributes: ['id', 'name', 'studentLimit'],
+        attributes:
+            ['id', 'name', 'studentLimit']
+        ,
+            // include: [
+            //     [sequelize.fn('COUNT', sequelize.col(Supplies.id)), 'supplyCount']
+            // ]
+
         // Phase 7:
             // Include classroom supplies and order supplies by category then
                 // name (both in ascending order)
@@ -61,7 +67,13 @@ router.get('/:id', async (req, res, next) => {
                 // then firstName (both in ascending order)
                 // (Optional): No need to include the StudentClassrooms
         // Your code here
+        include: {
+            model: Supply,
+            attributes: []
+        }
     });
+
+    console.log(classroom)
 
     if (!classroom) {
         res.status(404);
@@ -71,12 +83,23 @@ router.get('/:id', async (req, res, next) => {
     // Phase 5: Supply and Student counts, Overloaded classroom
         // Phase 5A: Find the number of supplies the classroom has and set it as
             // a property of supplyCount on the response
+
+        let supplyCount = Supply.findAll({
+            where: {
+                classroomId: classroom.id
+            }
+        })
+
+        supplyCount = supplyCount.Count()
+        console.log(supplyCount)
+
+
         // Phase 5B: Find the number of students in the classroom and set it as
             // a property of studentCount on the response
         // Phase 5C: Calculate if the classroom is overloaded by comparing the
             // studentLimit of the classroom to the number of students in the
             // classroom
-        // Optional Phase 5D: Calculate the average grade of the classroom 
+        // Optional Phase 5D: Calculate the average grade of the classroom
     // Your code here
 
     res.json(classroom);

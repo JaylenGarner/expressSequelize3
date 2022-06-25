@@ -60,7 +60,23 @@ router.get('/', async (req, res, next) => {
     */
     const where = {};
 
-    // Your code here
+    if (req.query.firstName) where.firstName = {[Op.like]: `${req.query.firstName}%`}
+    if (req.query.lastName) where.lastName = {[Op.like]:`${req.query.lastName}%`}
+    if (req.query.lefty) {
+        if (req.query.lefty === 'true') {
+            where.leftHanded = true
+        } else if (req.query.lefty === 'false'){
+            where.leftHanded = false
+        } else {
+        errorResult.errors.push({message: 'Lefty should be either true or false'})
+        res.statusCode = 400
+        res.json({
+            message: errorResult
+        })
+        }
+    }
+
+
 
 
     // Phase 2C: Handle invalid params with "Bad Request" response
