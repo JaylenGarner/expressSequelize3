@@ -12,12 +12,28 @@ router.get('/', async (req, res, next) => {
 
     // Phase 2A: Use query params for page & size
     // Your code here
+    console.log(req.query)
+    const page = req.query.page === undefined ? 1 : parseInt(req.query.page)
+    const size = req.query.size === undefined ? 10 : parseInt(req.query.size)
 
     // Phase 2B: Calculate limit and offset
+    let query = {}
+    if (page >= 1 && size >= 1) {
+        // IMPORTANT
+        query.limit = size
+        query.offset = size * (page - 1)
+    }
     // Phase 2B (optional): Special case to return all students (page=0, size=0)
+
     // Phase 2B: Add an error message to errorResult.errors of
         // 'Requires valid page and size params' when page or size is invalid
-    // Your code here
+    if ((isNaN(page) || page < 0) || (isNaN(size) || size < 0)) {
+        errorResult.errors.push({message: 'Requires valid page and size params'})
+        res.statusCode = 400
+        res.json({
+            message: errorResult
+        })
+    }
 
     // Phase 4: Student Search Filters
     /*
@@ -73,18 +89,20 @@ router.get('/', async (req, res, next) => {
     result.rows = await Student.findAll({
         attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
         where,
+        limit: query.limit,
+        offset: query.offset,
         // Phase 1A: Order the Students search results
         order : [
             ['lastName'],
             ['firstName']
         ]
-        
     });
 
     // Phase 2E: Include the page number as a key of page in the response data
         // In the special case (page=0, size=0) that returns all students, set
             // page to 1
         /*
+        r
             Response should be formatted to look like this:
             {
                 rows: [{ id... }] // query results,
@@ -92,6 +110,12 @@ router.get('/', async (req, res, next) => {
             }
         */
     // Your code here
+    if (page === 0 || size === 0) {
+        result.page = 1
+    } else {
+    result.page = page
+    }
+
 
     // Phase 3B:
         // Include the total number of available pages for this query as a key
