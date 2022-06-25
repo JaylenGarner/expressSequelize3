@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 // Import model(s)
-const { Student } = require('../db/models');
+const { Student, Sequelize } = require('../db/models');
 const { Op } = require("sequelize");
 
 // List
@@ -85,6 +85,14 @@ router.get('/', async (req, res, next) => {
     // Phase 3A: Include total number of results returned from the query without
         // limits and offsets as a property of count on the result
         // Note: This should be a new query
+
+    let totalCount = await Student.count();
+    // console.log(result.count);
+    result.count = totalCount - query.limit;
+    // console.log(result.count);
+    result.pageCount = Math.ceil(totalCount / query.limit);
+    errorResult.count = totalCount;
+    // console.log(result.pageCount);
 
     result.rows = await Student.findAll({
         attributes: ['id', 'firstName', 'lastName', 'leftHanded'],
