@@ -11,6 +11,24 @@ router.get('/category/:categoryName', async (req, res, next) => {
         // Find all supplies by category name
         // Order results by supply's name then handed
         // Return the found supplies as the response body
+        let {categoryName} = req.params;
+        categoryName = categoryName[0].toUpperCase() + categoryName.slice(1);
+
+        const allSupplies = await Supply.findAll({
+
+            where: {
+                category: categoryName
+                
+            },
+            order: [
+                ['name'],
+                ['handed']
+            ]
+
+        });
+
+        res.json(allSupplies);
+
     // Phase 8A:
         // Include Classroom in the supplies query results
         // Order nested classroom results by name first then by supply name
